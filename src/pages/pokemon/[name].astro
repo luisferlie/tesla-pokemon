@@ -1,0 +1,59 @@
+---
+import PokemonCard from "@/components/pokemon/PokemonCard.astro";
+import Layout from "@/layouts/Layout.astro";
+import type { GetStaticPaths } from "astro";
+
+export const getStaticPaths = async () => {
+  const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=150");
+  const data = await res.json();
+  const results = data.results;
+
+
+  return results.map(({ name, url }) => ({
+    params: { name },
+    props: { name, url },
+  }));
+};
+
+const { name } = Astro.params;
+const { url } = Astro.props;
+
+const id = url.split("/").at(-2);
+
+const audioSrc = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${id}.ogg`;
+
+const image_src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png"
+---
+
+<Layout 
+title={`pokemon-#${id}-${name}`}
+description={`info sobre el pokemon ${name}`} 
+image={image_src}
+transition:name=`pokemon-#${id}-${name}`>
+  <section class="flex gap-16 justify-center items-center mt-10 mx-10 pb-10">
+    <div class="flex items-center gap-20">
+      <h1 class="text-5xl text-orange-300 underline pt-7">{name}</h1>
+      <audio
+        id="myAudio"
+        controls
+        autoplay
+        loop
+        class="w-50 mx-auto pt-2 mt-10"
+      >
+        <source src={audioSrc} type="audio/ogg" class="mx-auto" />
+      </audio>
+      <a href="/" class="text-blue-500 pt-10"> 🔙regresar</a>
+    </div>
+  </section>
+
+  <PokemonCard name={name} url={url} isBig transition:name=`pokemon-${id}` />
+</Layout>
+
+<style>
+  a {
+  }
+</style>
+<script>
+  const audio = document.getElementById("myAudio");
+  audio.volume = 0.1; // Volumen al 50% (valor fijo)
+</script>

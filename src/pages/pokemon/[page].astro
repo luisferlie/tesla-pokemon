@@ -1,0 +1,72 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import PokemonCard from "@/components/pokemon/PokemonCard.astro";
+const title = "Pokemon static | Home";
+
+import type { GetStaticPaths } from "astro";
+
+interface Pokemon {
+  name: string;
+  url: string;
+}
+
+const { page } = Astro.props as {
+  page: {
+    data: Pokemon[];
+    currentPage: number;
+    lastPage: number;
+    url: {
+      current: string;
+      prev: string | undefined;
+      next: string | undefined;
+    };
+  };
+};
+console.log(page);
+export const getStaticPaths: GetStaticPaths = async ({ paginate }) => {
+  const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=150");
+  const { results } = await res.json();
+  return paginate(results as Pokemon[], { pageSize: 10 });
+};
+---
+
+<Layout title={title}>
+  <h1 class="text-6xl text-center">Listado de Pokémons</h1>
+  <hr />
+  <section
+    class="p-10 grid grid-cols-1 place-items-center sm:grid-cols-3 md:grid-cols-5 gap-4"
+  >
+    {page.data.map(({ name, url }) => <PokemonCard name={name} url={url} />)}
+  </section>
+
+  <!-- Navegación entre páginas -->
+  <div class="flex justify-center gap-4 my-8">
+    {
+      page.url.prev && (
+        <a
+          href={page.url.prev}
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Anterior
+        </a>
+      )
+    }
+    <span class="px-4 py-2 bg-zinc-600 rounded">
+      Página {page.currentPage} de {page.lastPage}
+    </span>
+    {
+      page.url.next && (
+        <a
+          href={page.url.next}
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Siguiente
+        </a>
+      )
+    }
+  </div>
+</Layout>
+
+<style is:global>
+
+</style>
